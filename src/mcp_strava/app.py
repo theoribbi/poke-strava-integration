@@ -162,7 +162,7 @@ def enable_strava_notifications():
     from mcp_strava.services.poke import send_poke
     
     # Set up webhook
-    webhook_result = create_webhook_subscription()
+    webhook_result = create_webhook_subscription_async()
     
     if webhook_result.get("status") in ["success", "already_exists"]:
         # Send features overview to Poke

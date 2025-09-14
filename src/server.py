@@ -10,7 +10,7 @@ from mcp_strava.app import mcp as mcp_server
 from mcp_strava.services.strava_webhook import verify_webhook, handle_webhook_event
 from mcp_strava.services.strava_oauth import authorize_url, exchange_code, refresh_token
 from mcp_strava.services.token_store import  save_tokens
-from mcp_strava.services.webhook_manager import create_webhook_subscription
+from mcp_strava.services.webhook_manager import create_webhook_subscription_async
 from mcp_strava.services.strava_client import reload_tokens
 
 
@@ -78,7 +78,7 @@ async def auth_callback(request):
             send_result = send_poke(poke_message)
             print(f"[AUTH] Sent notification setup message to Poke: {send_result}")
             
-            webhook_result = create_webhook_subscription()
+            webhook_result = create_webhook_subscription_async()
             print(f"[AUTH] Webhook creation result: {webhook_result}")
             
             body = f"""
