@@ -59,11 +59,44 @@ async def auth_callback(request):
         print(f"[AUTH] Tokens reloaded in Strava client")
 
         a = (data.get("athlete") or {})
-        body = f"""
-        <h1>Connected ✅</h1>
-        <p>Athlete: <b>{a.get('firstname','')} {a.get('lastname','')}</b> (ID {a.get('id')})</p>
-        <p>You can close this tab and use the tools.</p>
-        """
+        athlete_name = f"{a.get('firstname', '')} {a.get('lastname', '')}".strip()
+        
+        # Check if webhook is already configured
+        from mcp_strava.services.webhook_manager import list_webhook_subscriptions
+        from mcp_strava.services.poke import send_poke
+        
+        webhook_status = list_webhook_subscriptions()
+        has_webhook = webhook_status.get("status") == "success" and len(webhook_status.get("subscriptions", [])) > 0
+        
+        if not has_webhook:
+            # Send message to Poke asking about notifications
+            poke_message = f"User {athlete_name} connected Strava successfully. Ask if they want automatic workout analysis notifications when uploading activities. If yes, will analyze pace, distance, heart rate. If no, manual tools still available. And after the user response, send the feature overview: Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts."
+            
+            send_result = send_poke(poke_message)
+            print(f"[AUTH] Sent notification setup message to Poke: {send_result}")
+            
+            body = f"""
+            <h1>Connected ✅</h1>
+            <p>Athlete: <b>{athlete_name}</b> (ID {a.get('id')})</p>
+            <p>📱 We've sent a message to Poke asking if you'd like automatic workout notifications.</p>
+            <p>Check Poke and reply to set up your preferences!</p>
+            <p>You can close this tab now.</p>
+            """
+        else:
+            # Already has webhook, send feature overview
+            features_message = f"User {athlete_name} connected Strava and automatic notifications already enabled. Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts by ID. User can ask for weekly stats, activities from specific dates, or recent workout analysis."
+            
+            send_result = send_poke(features_message)
+            print(f"[AUTH] Sent features overview to Poke: {send_result}")
+            
+            body = f"""
+            <h1>Connected ✅</h1>
+            <p>Athlete: <b>{athlete_name}</b> (ID {a.get('id')})</p>
+            <p>✅ Automatic notifications are already enabled!</p>
+            <p>📱 We've sent a message to Poke with all available features.</p>
+            <p>You can close this tab now.</p>
+            """
+        
         return HTMLResponse(body, status_code=200)
     except Exception as e:
         import traceback
