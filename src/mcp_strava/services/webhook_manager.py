@@ -6,20 +6,25 @@ from mcp_strava.settings import STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_V
 from typing import Optional
 
 def create_webhook_subscription(callback_override: Optional[str] = None) -> Dict:
-    callback_url = callback_override or f"{PUBLIC_URL}/strava/webhook"
-    callback_url = callback_url.rstrip("/")
+    """
+    Create a Strava webhook subscription. We do a lightweight self-check first to
+    avoid Strava's 'not verifiable' when the callback isn’t reachable or returns the wrong format.
+    """
+    callback_url = (callback_override or f"{PUBLIC_URL}/strava/webhook").rstrip("/")
 
+    probe_challenge = "__probe__"
     try:
         probe = requests.get(
-            f"{callback_url}?hub.mode=subscribe&hub.verify_token={STRAVA_VERIFY_TOKEN}&hub.challenge=__probe__",
-            timeout=10,
+            f"{callback_url}"
+            f"?hub.mode=subscribe&hub.verify_token={STRAVA_VERIFY_TOKEN}&hub.challenge={probe_challenge}",
+            timeout=8,
         )
-        # Must be JSON with {"hub.challenge":"__probe__"} and 200
-        if probe.status_code != 200 or "hub.challenge" not in (probe.json() or {}):
+        # Must be 200 and body must equal the challenge string (plain text)
+        if probe.status_code != 200 or probe.text.strip() != probe_challenge:
             print("[WEBHOOK] Self-check failed:", probe.status_code, probe.text[:200])
             return {
                 "status": "error",
-                "content": "❌ Callback self-check failed. Verify your PUBLIC_URL and handler.",
+                "content": "❌ Callback self-check failed. Verify PUBLIC_URL and that /strava/webhook returns the challenge as plain text.",
                 "details": {"status": probe.status_code, "body": probe.text[:200]},
             }
     except Exception as e:
@@ -33,14 +38,22 @@ def create_webhook_subscription(callback_override: Optional[str] = None) -> Dict
     }
 
     print(f"[WEBHOOK] Creating subscription with callback: {callback_url}")
-    resp = requests.post("https://www.strava.com/api/v3/push_subscriptions", data=data, timeout=30)
-    print(f"[WEBHOOK] Create response: {resp.status_code} - {resp.text}")
+    try:
+        resp = requests.post(
+            "https://www.strava.com/api/v3/push_subscriptions",
+            data=data,
+            timeout=8,  # keep short so your tool doesn't hang if Strava is slow
+        )
+        print(f"[WEBHOOK] Create response: {resp.status_code} - {resp.text[:200]}")
+    except Exception as e:
+        return {"status": "error", "error": str(e), "content": f"❌ Error creating subscription: {e}"}
 
     if resp.status_code == 201:
         return {"status": "success", "subscription": resp.json(), "content": f"✅ Subscription OK → {callback_url}"}
     if resp.status_code == 409:
         return {"status": "already_exists", "content": "⚠️ Subscription already exists."}
     return {"status": "error", "error": resp.text, "content": f"❌ {resp.status_code} - {resp.text}"}
+
 
 
 def list_webhook_subscriptions() -> Dict:
