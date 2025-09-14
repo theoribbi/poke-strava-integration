@@ -3,6 +3,9 @@ from mcp_strava.tools.recent import recent_activities
 from mcp_strava.tools.weekly import weekly_summary
 from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.tools.date_activities import get_activities_by_date
+from mcp_strava.services.strava_oauth import authorize_url
+from mcp_strava.services.token_store import load_tokens
+from mcp_strava.services.strava_client import get_athlete
 
 mcp = FastMCP("Strava MCP")
 
@@ -43,6 +46,86 @@ def get_activities_by_date_range(
         end_date=end_date,
         limit=limit
     )
+
+@mcp.tool(description="Start Strava authentication process - get authorization URL")
+def start_strava_auth():
+    """
+    Generate Strava authorization URL to connect your account.
+    
+    Returns the URL you need to visit to authorize the app with Strava.
+    After authorization, you'll be redirected back to complete the setup.
+    """
+    try:
+        auth_url = authorize_url(state="mcp-auth")
+        
+        return {
+            "status": "auth_required",
+            "authorization_url": auth_url,
+            "instructions": [
+                "1. Click or visit the authorization URL above",
+                "2. Log in to your Strava account if needed",
+                "3. Click 'Authorize' to give permission",
+                "4. You'll be redirected back to complete the setup",
+                "5. Then you can use all Strava tools!"
+            ],
+            "content": f"🚀 To connect your Strava account, visit: {auth_url}\n\nAfter authorization, you'll be able to use all Strava tools to analyze your activities!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "content": f"❌ Error generating Strava authorization URL: {e}"
+        }
+
+@mcp.tool(description="Check Strava connection status and user info")
+def check_strava_connection():
+    """
+    Check if Strava is properly connected and show user information.
+    
+    Returns connection status and athlete info if connected.
+    """
+    try:
+        # Check if we have tokens
+        tokens = load_tokens()
+        if not tokens:
+            return {
+                "status": "not_connected",
+                "content": "❌ Not connected to Strava. Use 'start_strava_auth' to connect your account.",
+                "next_action": "Use the start_strava_auth tool to get your authorization URL"
+            }
+        
+        # Try to fetch athlete info to verify connection works
+        try:
+            athlete = get_athlete()
+            return {
+                "status": "connected",
+                "athlete": {
+                    "id": athlete.get("id"),
+                    "name": f"{athlete.get('firstname', '')} {athlete.get('lastname', '')}".strip(),
+                    "username": athlete.get("username"),
+                    "city": athlete.get("city"),
+                    "state": athlete.get("state"),
+                    "country": athlete.get("country"),
+                    "profile_medium": athlete.get("profile_medium"),
+                    "follower_count": athlete.get("follower_count"),
+                    "friend_count": athlete.get("friend_count")
+                },
+                "content": f"✅ Connected to Strava as {athlete.get('firstname', '')} {athlete.get('lastname', '')} (@{athlete.get('username', 'N/A')})\nLocation: {athlete.get('city', 'N/A')}, {athlete.get('state', 'N/A')}\nFollowers: {athlete.get('follower_count', 0)} | Following: {athlete.get('friend_count', 0)}"
+            }
+        except Exception as api_error:
+            return {
+                "status": "token_expired", 
+                "error": str(api_error),
+                "content": "⚠️ Connected but tokens may be expired. Use 'start_strava_auth' to reconnect.",
+                "next_action": "Re-authenticate using start_strava_auth tool"
+            }
+            
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "content": f"❌ Error checking Strava connection: {e}"
+        }
 
 # Optional: a MCP text resource to display directly in Poke
 @mcp.resource("weekly://summary")
