@@ -193,7 +193,25 @@ Or just create a **manual activity** in Strava. The webhook will trigger and pus
    - `weekly_summary`
    - `analyze_activity`
 
-3. The webhook handler pushes messages to your **Poke account** using `POKE_API_KEY`.
+3. Webhook configuration
+# 1. Delete any old subscriptions (optional but recommended)
+curl -X GET "https://www.strava.com/api/v3/push_subscriptions" \
+  -d client_id=$STRAVA_CLIENT_ID \
+  -d client_secret=$STRAVA_CLIENT_SECRET
+
+# If you see old ones pointing to ngrok or localhost, delete them:
+# curl -X DELETE "https://www.strava.com/api/v3/push_subscriptions/{id}" \
+#   -d client_id=$STRAVA_CLIENT_ID \
+#   -d client_secret=$STRAVA_CLIENT_SECRET
+
+# 2. Create a new subscription pointing to your deployed server
+curl -X POST https://www.strava.com/api/v3/push_subscriptions \
+  -F client_id=$STRAVA_CLIENT_ID \
+  -F client_secret=$STRAVA_CLIENT_SECRET \
+  -F callback_url="https://fastmcp-server-a9wl.onrender.com/strava/webhook" \
+  -F verify_token=prod-verify
+
+4. The webhook handler pushes messages to your **Poke account** using `POKE_API_KEY`.
 
 ---
 
