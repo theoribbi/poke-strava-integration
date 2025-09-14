@@ -2,6 +2,9 @@
 import os
 import uvicorn
 from dotenv import load_dotenv
+from fastapi import FastAPI
+
+app = FastAPI()
 
 # Load environment variables
 load_dotenv()
@@ -9,8 +12,14 @@ load_dotenv()
 # ========= MCP Server Setup =========
 from mcp_strava.app import mcp as mcp_server
 from mcp_strava.services.strava_webhook import verify_webhook, handle_webhook_event
+from mcp_strava.services.token_store import init_db
 
 print("[MCP] Adding custom routes to FastMCP server")
+
+@app.on_event("startup")
+async def startup_event():
+    print("[APP] Startup → init_db()")
+    init_db()
 
 # ========= Health & Info Routes =========
 @mcp_server.custom_route("/healthz", methods=["GET"])
