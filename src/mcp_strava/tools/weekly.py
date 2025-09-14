@@ -99,4 +99,5 @@ def weekly_summary(include_content: bool = False):
             f"- Avg HR: {fmt(s['avg_hr'])}"
         )
 
+    payload["poke_prompt"] = "user asked for weekly summary. respond in casual poke style - brief and encouraging. highlight the key achievements naturally. keep it conversational, not formal stats dump."
     return payload

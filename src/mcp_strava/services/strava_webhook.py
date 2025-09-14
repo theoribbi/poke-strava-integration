@@ -66,7 +66,11 @@ async def handle_webhook_event(request: Request):
                 res = {}
 
             if res.get("content"):
-                send_poke(res["content"])
+                # Include both content and prompt for better Poke responses
+                message = res["content"]
+                if res.get("poke_prompt"):
+                    message = f"{res['poke_prompt']}. Here's the data: {message}"
+                send_poke(message)
             else:
                 print("[POKE] skipped: no content")
 

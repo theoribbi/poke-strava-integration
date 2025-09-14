@@ -45,6 +45,7 @@ def analyze_activity(activity_id: int) -> dict:
             "avg_speed_kmh": act.get("avg_speed_kmh"),
             "pace_per_100m_min": mmss_to_min(act.get("pace_per_100m")),
         },
-        "content": content
+        "content": content,
+        "poke_prompt": "user just uploaded a new activity to strava. respond in casual poke style - brief and encouraging about their workout. be supportive but not overly formal. highlight something interesting about the performance."
     }
     return payload

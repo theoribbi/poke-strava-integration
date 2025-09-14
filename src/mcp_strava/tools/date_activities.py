@@ -118,5 +118,6 @@ def get_activities_by_date(
             "total_time_min": round(sum(a.get("moving_time_min", 0) for a in activities if a.get("moving_time_min")), 1),
             "sports": list(set(a.get("sport", "Unknown") for a in activities)),
         },
-        "content": content
+        "content": content,
+        "poke_prompt": "user asked about activities on a specific date/range. respond in casual poke style - brief, conversational. highlight key stats naturally. if no activities, keep it simple and direct. don't be formal or verbose."
     }
