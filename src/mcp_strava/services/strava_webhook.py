@@ -3,7 +3,7 @@ import os
 import time
 from typing import Dict
 from fastapi import Request
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 
 from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.services.poke import send_poke
@@ -27,21 +27,18 @@ def _dedupe(key: str, ttl: int = 60) -> bool:
     return True
 
 async def verify_webhook(request: Request):
-    """Handle Strava webhook verification"""
     q = request.query_params
     mode = q.get("hub.mode")
     token = q.get("hub.verify_token")
     challenge = q.get("hub.challenge")
-    
+
     print("[WEBHOOK] verify:", dict(q))
-    
-    # Always return OK for any GET request to make Strava happy
-    if challenge:
-        print(f"[WEBHOOK] Returning challenge: {challenge}")
-        return PlainTextResponse(challenge, status_code=200)
-    
-    # For simple health checks
-    return JSONResponse({"status": "webhook endpoint ready"}, status_code=200)
+
+    if mode == "subscribe" and token == STRAVA_VERIFY_TOKEN and challenge:
+        return JSONResponse({"hub.challenge": challenge}, status_code=200)
+
+    return JSONResponse({"error": "verification failed"}, status_code=403)
+
 
 async def handle_webhook_event(request: Request):
     """Handle Strava webhook events"""
