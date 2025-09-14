@@ -1,10 +1,7 @@
 """Poke notification service"""
-import os
 import requests
 from typing import Dict
-
-POKE_API_KEY = os.getenv("POKE_API_KEY")
-POKE_INBOUND_URL = os.getenv("POKE_INBOUND_URL", "https://poke.com/api/v1/inbound-sms/webhook")
+from mcp_strava.settings import POKE_API_KEY, POKE_INBOUND_URL  
 
 def send_poke(message: str) -> Dict:
     """Send a message via Poke API"""

@@ -41,6 +41,8 @@ def get_activities_by_date(
         Dict with activities and metadata
     """
     
+    print(f"[DATE_ACTIVITIES] Called with: date={date}, start_date={start_date}, end_date={end_date}, limit={limit}")
+    
     if date and (start_date or end_date):
         raise ValueError("Use either 'date' for single date or 'start_date'/'end_date' for range, not both")
     

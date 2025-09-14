@@ -7,8 +7,7 @@ from fastapi.responses import JSONResponse
 
 from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.services.poke import send_poke
-
-STRAVA_VERIFY_TOKEN = os.getenv("STRAVA_VERIFY_TOKEN", "dev-verify")
+from mcp_strava.settings import STRAVA_VERIFY_TOKEN
 
 # Deduplication cache
 _seen: Dict[str, float] = {}
