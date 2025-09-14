@@ -10,6 +10,7 @@ from mcp_strava.app import mcp as mcp_server
 from mcp_strava.services.strava_webhook import verify_webhook, handle_webhook_event
 from mcp_strava.services.strava_oauth import authorize_url, exchange_code, refresh_token
 from mcp_strava.services.token_store import  save_tokens
+from mcp_strava.services.strava_client import reload_tokens
 
 
 print("[MCP] Adding custom routes to FastMCP server")
@@ -52,6 +53,10 @@ async def auth_callback(request):
         print(f"[AUTH] Saving tokens...")
         save_tokens(data)
         print(f"[AUTH] Tokens saved successfully")
+        
+        # Reload tokens in the Strava client
+        reload_tokens()
+        print(f"[AUTH] Tokens reloaded in Strava client")
 
         a = (data.get("athlete") or {})
         body = f"""
