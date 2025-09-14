@@ -33,6 +33,8 @@ A **MCP server prototype** that:
 - **Demo mode**: single-user, tokens stored in a **local JSON file**.  
   > Can easily be extended to a DB (SQLite/Postgres) for multi-user.
 
+📹 **Quick Start Video Tutorial**: [Watch the setup walkthrough](https://www.loom.com/share/7ff1c6ecd6bb4d7a8b7b189af8127fcd?sid=340c0330-284c-4352-90f0-a7fe1d80f447)
+
 ---
 
 ## Architecture
