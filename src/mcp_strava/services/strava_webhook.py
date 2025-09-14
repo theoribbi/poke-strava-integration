@@ -3,7 +3,7 @@ import os
 import time
 from typing import Dict
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.services.poke import send_poke
@@ -36,7 +36,7 @@ async def verify_webhook(request: Request):
     print("[WEBHOOK] verify:", dict(q))
     
     if mode == "subscribe" and token == STRAVA_VERIFY_TOKEN and challenge:
-        return JSONResponse({"hub.challenge": challenge}, status_code=200)
+        return PlainTextResponse(challenge, status_code=200)
     
     return JSONResponse({"error": "verification failed"}, status_code=403)
 
