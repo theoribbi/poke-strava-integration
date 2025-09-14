@@ -10,6 +10,7 @@ from mcp_strava.app import mcp as mcp_server
 from mcp_strava.services.strava_webhook import verify_webhook, handle_webhook_event
 from mcp_strava.services.strava_oauth import authorize_url, exchange_code, refresh_token
 from mcp_strava.services.token_store import  save_tokens
+from mcp_strava.services.webhook_manager import create_webhook_subscription
 from mcp_strava.services.strava_client import reload_tokens
 
 
@@ -72,22 +73,25 @@ async def auth_callback(request):
         has_webhook = webhook_status.get("status") == "success" and len(webhook_status.get("subscriptions", [])) > 0
         
         if not has_webhook:
-            # Send message to Poke asking about notifications
-            poke_message = f"User {athlete_name} connected Strava successfully. Ask if they want automatic workout analysis notifications when uploading activities. If yes, will analyze pace, distance, heart rate. If no, manual tools still available. And after the user response, send the feature overview: Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts."
+            poke_message = f"user just connected to strava. ask if they want automatic workout analysis notifications when uploading activities. and after the user response, send the feature overview weekly summary, search workouts by date/range, recent activities list, analyze specific workouts but tell it in casual poke style"
             
             send_result = send_poke(poke_message)
             print(f"[AUTH] Sent notification setup message to Poke: {send_result}")
+            
+            webhook_result = create_webhook_subscription()
+            print(f"[AUTH] Webhook creation result: {webhook_result}")
             
             body = f"""
             <h1>Connected ✅</h1>
             <p>Athlete: <b>{athlete_name}</b> (ID {a.get('id')})</p>
             <p>📱 We've sent a message to Poke asking if you'd like automatic workout notifications.</p>
+            <p>✅ Webhook automatically configured for instant notifications!</p>
             <p>Check Poke and reply to set up your preferences!</p>
             <p>You can close this tab now.</p>
             """
         else:
             # Already has webhook, send feature overview
-            features_message = f"User {athlete_name} connected Strava and automatic notifications already enabled. Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts. User can ask for weekly stats, activities from specific dates, or recent workout analysis."
+            features_message = f"user connected strava and automatic notifications already enabled. tell them in casual poke style that they can get weekly summaries, search workouts by date/range, see recent activities, and analyze specific workouts. mention they can ask for weekly stats, activities from specific dates, or workout analysis."
             
             send_result = send_poke(features_message)
             print(f"[AUTH] Sent features overview to Poke: {send_result}")
