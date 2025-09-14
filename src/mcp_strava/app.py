@@ -130,13 +130,13 @@ def check_strava_connection():
         }
 
 @mcp.tool(description="Create Strava webhook subscription for automatic activity notifications")
-def setup_strava_webhook():
+def setup_strava_webhook(callback_url: str | None = None):
     """
     Create a webhook subscription so Strava notifies your server when activities are created/updated.
     
     This enables automatic analysis and Poke notifications when you upload new activities.
     """
-    return create_webhook_subscription()
+    return create_webhook_subscription(callback_override=callback_url)
 
 @mcp.tool(description="List all active Strava webhook subscriptions")
 def list_strava_webhooks():
