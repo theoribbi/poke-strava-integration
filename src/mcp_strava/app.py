@@ -5,7 +5,7 @@ from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.tools.date_activities import get_activities_by_date
 from mcp_strava.services.token_store import load_tokens
 from mcp_strava.services.strava_client import get_athlete
-from mcp_strava.services.webhook_manager import create_webhook_subscription, list_webhook_subscriptions, delete_webhook_subscription
+from mcp_strava.services.webhook_manager import create_webhook_subscription_async, list_webhook_subscriptions, delete_webhook_subscription
 from mcp_strava.settings import PUBLIC_URL
 
 mcp = FastMCP("Strava MCP")
@@ -130,13 +130,9 @@ def check_strava_connection():
         }
 
 @mcp.tool(description="Create Strava webhook subscription for automatic activity notifications")
-def setup_strava_webhook(callback_url: str | None = None):
-    """
-    Create a webhook subscription so Strava notifies your server when activities are created/updated.
-    
-    This enables automatic analysis and Poke notifications when you upload new activities.
-    """
-    return create_webhook_subscription(callback_override=callback_url)
+async def setup_strava_webhook(callback_url: str | None = None):
+    return await create_webhook_subscription_async(callback_override=callback_url)
+
 
 @mcp.tool(description="List all active Strava webhook subscriptions")
 def list_strava_webhooks():
