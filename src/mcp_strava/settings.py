@@ -20,11 +20,11 @@ STRAVA_CLIENT_SECRET = env("STRAVA_CLIENT_SECRET", required=True)
 STRAVA_ACCESS_TOKEN  = env("STRAVA_ACCESS_TOKEN")   # can be empty before first OAuth
 STRAVA_REFRESH_TOKEN = env("STRAVA_REFRESH_TOKEN")
 STRAVA_EXPIRES_AT    = int(env("STRAVA_EXPIRES_AT", str(0)) or "0")
-STRAVA_VERIFY_TOKEN = env("STRAVA_VERIFY_TOKEN", "dev-verify")
+STRAVA_VERIFY_TOKEN = env("STRAVA_VERIFY_TOKEN", "prod-verify")
 STRAVA_REDIRECT_URI = env("STRAVA_REDIRECT_URI", "http://localhost/exchange")
 
 TOK_FILE = env("TOKEN_FILE", "tokens.json")
-PUBLIC_URL = env("PUBLIC_URL", "https://9d3cbe15ae47.ngrok-free.app")
+PUBLIC_URL = env("PUBLIC_URL", "https://fastmcp-server-a9wl.onrender.com")
 
 # Poke inbound (optional, to push a message)
 POKE_API_KEY    = env("POKE_API_KEY")

@@ -23,6 +23,7 @@ async def healthz(request):
 
 @mcp_server.custom_route("/", methods=["GET"])
 async def root(request):
+    print(f"[ROOT] Request from {request.client.host if request.client else 'unknown'}")
     return JSONResponse({"ok": True, "routes": ["/ (MCP endpoints)", "/strava/webhook", "/healthz"]})
 
 # ========= Strava Webhook Routes =========
@@ -32,6 +33,8 @@ async def verify_strava_webhook(request):
 
 @mcp_server.custom_route("/strava/webhook", methods=["POST"])
 async def handle_strava_webhook(request):
+    print(f"[WEBHOOK] POST request received from {request.client.host if request.client else 'unknown'}")
+    print(f"[WEBHOOK] Headers: {dict(request.headers)}")
     return await handle_webhook_event(request)
 
 # ========= OAuth Strava (via MCP custom routes) =========
@@ -84,7 +87,7 @@ async def auth_callback(request):
             """
         else:
             # Already has webhook, send feature overview
-            features_message = f"User {athlete_name} connected Strava and automatic notifications already enabled. Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts by ID. User can ask for weekly stats, activities from specific dates, or recent workout analysis."
+            features_message = f"User {athlete_name} connected Strava and automatic notifications already enabled. Available features: weekly summary, search workouts by date/range, recent activities list, analyze specific workouts. User can ask for weekly stats, activities from specific dates, or recent workout analysis."
             
             send_result = send_poke(features_message)
             print(f"[AUTH] Sent features overview to Poke: {send_result}")
