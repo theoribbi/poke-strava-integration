@@ -2,7 +2,7 @@
 import os
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
 from mcp_strava.settings import HOST, PORT, POKE_API_KEY, STRAVA_VERIFY_TOKEN
 
 # ========= MCP Server Setup =========
@@ -18,11 +18,11 @@ print("[MCP] Adding custom routes to FastMCP server")
 # ========= Health & Info Routes =========
 @mcp_server.custom_route("/healthz", methods=["GET"])
 async def healthz(request):
-    return {"status": "healthy"}
+    return JSONResponse({"status": "healthy"})
 
 @mcp_server.custom_route("/", methods=["GET"])
 async def root(request):
-    return {"ok": True, "routes": ["/ (MCP endpoints)", "/strava/webhook", "/healthz"]}
+    return JSONResponse({"ok": True, "routes": ["/ (MCP endpoints)", "/strava/webhook", "/healthz"]})
 
 # ========= Strava Webhook Routes =========
 @mcp_server.custom_route("/strava/webhook", methods=["GET"])
