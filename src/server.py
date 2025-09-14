@@ -17,11 +17,11 @@ print("[MCP] Adding custom routes to FastMCP server")
 
 # ========= Health & Info Routes =========
 @mcp_server.custom_route("/healthz", methods=["GET"])
-async def healthz():
+async def healthz(request):
     return {"status": "healthy"}
 
 @mcp_server.custom_route("/", methods=["GET"])
-async def root():
+async def root(request):
     return {"ok": True, "routes": ["/ (MCP endpoints)", "/strava/webhook", "/healthz"]}
 
 # ========= Strava Webhook Routes =========
