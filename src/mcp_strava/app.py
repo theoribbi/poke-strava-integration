@@ -3,9 +3,9 @@ from mcp_strava.tools.recent import recent_activities
 from mcp_strava.tools.weekly import weekly_summary
 from mcp_strava.tools.analyze import analyze_activity
 from mcp_strava.tools.date_activities import get_activities_by_date
-from mcp_strava.services.strava_oauth import authorize_url
 from mcp_strava.services.token_store import load_tokens
 from mcp_strava.services.strava_client import get_athlete
+from mcp_strava.settings import PUBLIC_URL
 
 mcp = FastMCP("Strava MCP")
 
@@ -50,31 +50,32 @@ def get_activities_by_date_range(
 @mcp.tool(description="Start Strava authentication process - get authorization URL")
 def start_strava_auth():
     """
-    Generate Strava authorization URL to connect your account.
+    Generate your app's authorization URL to connect Strava account.
     
-    Returns the URL you need to visit to authorize the app with Strava.
+    Returns the URL to your server that will handle the Strava OAuth flow.
     After authorization, you'll be redirected back to complete the setup.
     """
     try:
-        auth_url = authorize_url(state="mcp-auth")
+        # Use YOUR server's auth start endpoint
+        auth_url = f"{PUBLIC_URL}/auth/strava/start"
         
         return {
             "status": "auth_required",
             "authorization_url": auth_url,
             "instructions": [
                 "1. Click or visit the authorization URL above",
-                "2. Log in to your Strava account if needed",
-                "3. Click 'Authorize' to give permission",
-                "4. You'll be redirected back to complete the setup",
+                "2. You'll be redirected to Strava to log in",
+                "3. Click 'Authorize' to give permission to the app",
+                "4. You'll be redirected back to see confirmation",
                 "5. Then you can use all Strava tools!"
             ],
-            "content": f"🚀 To connect your Strava account, visit: {auth_url}\n\nAfter authorization, you'll be able to use all Strava tools to analyze your activities!"
+            "content": f"🚀 To connect your Strava account, visit: {auth_url}\n\nThis will take you through the Strava authorization process. After authorization, you'll be able to use all Strava tools to analyze your activities!"
         }
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
-            "content": f"❌ Error generating Strava authorization URL: {e}"
+            "content": f"❌ Error generating authorization URL: {e}"
         }
 
 @mcp.tool(description="Check Strava connection status and user info")
